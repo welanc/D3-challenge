@@ -1,11 +1,11 @@
 // @TODO: YOUR CODE HERE!
 var svgWidth = 960;
-var svgHeight = 500;
+var svgHeight = 700;
 
 var margin = {
     top: 20,
     right: 40,
-    bottom: 60,
+    bottom: 120,
     left: 100
 };
 
@@ -21,14 +21,32 @@ var svg = d3.select("#scatter")
 var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
+var xAxisLabels = [
+    "In Poverty (%)",
+    "Age (Median)",
+    "Household Income (Median)"
+];
+
+var yAxisLabels = [
+    "Obese (%)",
+    "Smokes (%)",
+    "Lacks Healthcare (%)"
+];
+
 // Import Data
 d3.csv("assets/data/data.csv").then(function (stateData) {
 
     // Step 1: Parse Data/Cast as numbers
     // ==============================
     stateData.forEach(function (data) {
+        // x axes
         data.poverty = +data.poverty;
+        data.age = +data.age;
+        data.income = +data.income;
+        // y axes
         data.healthcare = +data.healthcare;
+        data.smokes = +data.smokes;
+        data.obese = +data.obese;
     });
 
     // Step 2: Create scale functions
@@ -76,7 +94,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         })
         .attr("x", d => xLinearScale(d.poverty))
         .attr("y", d => yLinearScale(d.healthcare))
-        .attr("dy", ".35em");
+        .attr("dy", ".25em");
 
     // Step 6: Initialize tool tip
     // ==============================
@@ -101,19 +119,32 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             toolTip.hide(data);
         });
 
-    // Create axes labels
-    chartGroup.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 40)
-        .attr("x", 0 - (height / 2))
-        .attr("dy", "1em")
-        .attr("class", "axisText")
-        .text("Lacks Healthcare (%)");
+    // Create y-axes labels
+    yAxisLabels.forEach((d, i) => {
+        chartGroup.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left + 35 + (20 * [i]))
+            .attr("x", 0 - (height / 2))
+            .attr("class", "aText")
+            .attr("id", d)
+            .text(d);
+    });
 
-    chartGroup.append("text")
-        .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
-        .attr("class", "axisText")
-        .text("In Poverty (%)");
+    // Create x-axes labels
+    xAxisLabels.forEach((d, i) => {
+        chartGroup.append("text")
+            .attr("transform", `translate(${width / 2}, ${height + margin.top + 20 + (20 * [i])})`)
+            .attr("class", "aText")
+            .attr("id", d)
+            .text(d);
+    });
+
+    var aText = d3.selectAll(".aText");
+
+    aText.on("click", function (data) {
+        console.log(this);
+    });
+
 }).catch(function (error) {
     console.log(error);
 });
