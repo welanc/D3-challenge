@@ -66,22 +66,22 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         .attr("cy", d => yLinearScale(d.healthcare))
         .attr("r", "15");
 
-    var circlesText = chartGroup.selectAll("g")
+    var circlesText = chartGroup.selectAll("text.stateText")
         .data(stateData)
         .enter()
         .append("text")
         .classed("stateText", true)
-        .attr("x", d => xLinearScale(d.poverty))
-        .attr("y", d => yLinearScale(d.healthcare))
-        .attr("dy", ".35em")
         .text(function (d) {
             return d.abbr;
-        });
+        })
+        .attr("x", d => xLinearScale(d.poverty))
+        .attr("y", d => yLinearScale(d.healthcare))
+        .attr("dy", ".35em");
 
     // Step 6: Initialize tool tip
     // ==============================
     var toolTip = d3.tip()
-        .attr("class", "tooltip")
+        .attr("class", "d3-tip")
         .offset([80, -60])
         .html(function (d) {
             return (`${d.state}<br>In Poverty: ${d.poverty}<br>Lacks Healthcare: ${d.healthcare}`);
