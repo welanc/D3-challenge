@@ -61,14 +61,15 @@ function xScale(data, chosenX) {
 // Function to set the y-axis scale (as a linear scale)
 function yScale(data, chosenY) {
     var yLinearScale = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d[chosenY]) * 1.1])
+        .domain([d3.min(data, d => d[chosenY]) * 0.9,
+        d3.max(data, d => d[chosenY]) * 1.1])
         .range([height, 0]);
     return yLinearScale;
 };
 
 //------------------------------
 // function used for updating x-axis and y-axis var upon click on axis label
-function renderAxes(newXScale, xAxis) {
+function renderAxesX(newXScale, xAxis) {
     var bottomAxis = d3.axisBottom(newXScale);
 
     xAxis.transition()
@@ -78,7 +79,7 @@ function renderAxes(newXScale, xAxis) {
     return xAxis;
 }
 
-function renderAxes(newYScale, yAxis) {
+function renderAxesY(newYScale, yAxis) {
     var leftAxis = d3.axisLeft(newYScale);
 
     yAxis.transition()
@@ -91,7 +92,7 @@ function renderAxes(newYScale, yAxis) {
 //------------------------------
 // function used for updating "location" of circles group 
 // with a transition to new circles location
-function renderCircles(circlesGroup, newXScale, chosenXAxis) {
+function renderCirclesX(circlesGroup, newXScale, chosenXAxis) {
 
     circlesGroup.transition()
         .duration(1000)
@@ -100,28 +101,34 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
     return circlesGroup;
 }
 
-//------------------------------
-// function used for updating circles group with new tooltip
-function updateToolTip(chosenXAxis, circlesGroup) {
+function renderCirclesY(circlesGroup, newYScale, chosenYAxis) {
 
-    var toolTip = d3.tip()
-        .attr("class", "tooltip")
-        .offset([80, -60])
-        .html(function (d) {
-            return (`${d}<br>${d} ${d[chosenXAxis]}`);
-        });
-
-    circlesGroup.call(toolTip);
-
-    circlesGroup.on("mouseover", function (data) {
-        toolTip.show(data);
-    })
-        // onmouseout event
-        .on("mouseout", function (data, index) {
-            toolTip.hide(data);
-        });
+    circlesGroup.transition()
+        .duration(1000)
+        .attr("cy", d => newYScale(d[chosenYAxis]));
 
     return circlesGroup;
+}
+
+//------------------------------
+// function used for updating "location" of circles group 
+// with a transition to new circles location
+function renderTextX(circlesText, newXScale, chosenXAxis) {
+
+    circlesText.transition()
+        .duration(1000)
+        .attr("x", d => newXScale(d[chosenXAxis]));
+
+    return circlesText;
+}
+
+function renderTextY(circlesText, newYScale, chosenYAxis) {
+
+    circlesText.transition()
+        .duration(1000)
+        .attr("y", d => newYScale(d[chosenYAxis]));
+
+    return circlesText;
 }
 
 //------------------------------
@@ -145,6 +152,8 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
         .on("mouseout", function (data, index) {
             toolTip.hide(data);
         });
+
+    return circlesGroup;
 };
 
 //------------------------------
@@ -172,11 +181,11 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     var leftAxis = d3.axisLeft(yLinScale);
 
     // Append Axes to the chart
-    chartGroup.append("g")
+    var xAxis = chartGroup.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(bottomAxis);
 
-    chartGroup.append("g")
+    var yAxis = chartGroup.append("g")
         .call(leftAxis);
 
     // Create Circles
@@ -201,6 +210,12 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             return d.abbr;
         });
 
+    // Create group for x-axis and y-axis labels
+    xLabelsGroup = chartGroup.append("g")
+        .attr("id", "xLabelsGroup");
+    yLabelsGroup = chartGroup.append("g")
+        .attr("id", "yLabelsGroup");
+
     // Create x-axes labels
     for (i = 0; i < Object.keys(xAxisLabels).length; i++) {
         var xKeys = Object.keys(xAxisLabels);
@@ -213,7 +228,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             xStatus = "inactive";
         }
 
-        chartGroup.append("text")
+        xLabelsGroup.append("text")
             .attr("transform", `translate(${width / 2}, ${height + margin.top + 20 + (20 * i)})`)
             .classed("aText", true)
             .classed(xStatus, true)
@@ -233,7 +248,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             yStatus = "inactive";
         }
 
-        chartGroup.append("text")
+        yLabelsGroup.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 + margin.left - (20 * i) - 135)
             .attr("x", 0 - (height / 2))
@@ -243,20 +258,18 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             .text(yValues[i]);
     };
 
-
-
     // Initialize tool tip
     var toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
+    var xText = d3.select("#xLabelsGroup").selectAll(".aText");
+    var yText = d3.select("#yLabelsGroup").selectAll(".aText");
 
+    xText.on("click", function (data) {
+        var value = d3.select(this).attr("value");
+        console.log(`This value: ${value}, compared with current value: ${chosenXAxis}`);
 
-
-    var aText = d3.selectAll(".aText");
-
-    aText.on("click", function (data) {
-        console.log(this);
-        if (d3.selectAll(".active") == true) {
-            var activeText = d3.selectAll(".active");
+        if (d3.selectAll(".active")) {
+            var activeText = d3.select("#xLabelsGroup").selectAll(".active");
             console.log(activeText);
             activeText
                 .classed("active", false)
@@ -266,6 +279,73 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         data
             .classed("active", true)
             .classed("inactive", false);
+
+
+        if (value !== chosenXAxis) {
+
+            // replaces chosenXAxis with value
+            chosenXAxis = value;
+
+            // console.log(chosenXAxis)
+
+            // functions here found above csv import
+            // updates x scale for new data
+            xLinScale = xScale(stateData, chosenXAxis);
+
+            // updates x axis with transition
+            xAxis = renderAxesX(xLinScale, xAxis);
+
+            // updates circles with new x values
+            circlesGroup = renderCirclesX(circlesGroup, xLinScale, chosenXAxis);
+
+            circlesText = renderTextX(circlesText, xLinScale, chosenXAxis);
+
+            // updates tooltips with new info
+            // circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+        }
+
+
+    });
+
+    yText.on("click", function (data) {
+        var value = d3.select(this).attr("value");
+        console.log(`This value: ${value}, compared with current value: ${chosenYAxis}`);
+
+
+        if (d3.selectAll(".active")) {
+            var activeText = d3.select("#yLabelsGroup").selectAll(".active");
+            console.log(activeText);
+            activeText
+                .classed("active", false)
+                .classed("inactive", true);
+        }
+        data = d3.select(this);
+        data
+            .classed("active", true)
+            .classed("inactive", false);
+
+        if (value !== chosenYAxis) {
+
+            // replaces chosenXAxis with value
+            chosenYAxis = value;
+
+            // console.log(chosenXAxis)
+
+            // functions here found above csv import
+            // updates y scale for new data
+            yLinScale = yScale(stateData, chosenYAxis);
+
+            // updates y axis with transition
+            yAxis = renderAxesY(yLinScale, yAxis);
+
+            // updates circles with new x values
+            circlesGroup = renderCirclesY(circlesGroup, yLinScale, chosenYAxis);
+
+            circlesText = renderTextY(circlesText, yLinScale, chosenYAxis);
+
+            // updates tooltips with new info
+            // circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
+        }
 
     });
 
