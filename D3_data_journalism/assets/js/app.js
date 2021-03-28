@@ -131,16 +131,16 @@ function renderTextY(circlesText, newYScale, chosenYAxis) {
     return circlesText;
 }
 
+
 //------------------------------
 // function used for creating and updating tooltip
-function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
-
+function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText) {
 
     var toolTip = d3.tip()
         .attr("class", "d3-tip")
         .offset([80, -60])
         .html(function (d) {
-            return (`${d.state}<br>${chosenXAxis}: ${d[chosenXAxis]}<br>${chosenYAxis}: ${d[chosenYAxis]}`);
+            return (`${d.state}<br>${xAxisLabels[chosenXAxis]}: ${d[chosenXAxis]}<br>${yAxisLabels[chosenYAxis]}: ${d[chosenYAxis]}`);
         });
 
     // Create tooltip in the chart
@@ -155,7 +155,16 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
             toolTip.hide(data);
         });
 
-    return circlesGroup;
+    circlesText.on("mouseover", function (data) {
+        toolTip.show(data, this);
+    })
+        // onmouseout event
+        .on("mouseout", function (data, index) {
+            toolTip.hide(data);
+        });
+
+
+    return circlesGroup, circlesText;
 };
 
 //------------------------------
@@ -261,7 +270,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     };
 
     // Initialize tool tip
-    var toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+    var toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText);
 
     var xText = d3.select("#xLabelsGroup").selectAll(".aText");
     var yText = d3.select("#yLabelsGroup").selectAll(".aText");
@@ -303,7 +312,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             circlesText = renderTextX(circlesText, xLinScale, chosenXAxis);
 
             // updates tooltips with new info
-            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+            toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText);
         }
 
 
@@ -346,7 +355,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             circlesText = renderTextY(circlesText, yLinScale, chosenYAxis);
 
             // updates tooltips with new info
-            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+            toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText);
         }
 
     });
