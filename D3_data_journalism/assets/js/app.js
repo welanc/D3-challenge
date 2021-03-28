@@ -134,11 +134,13 @@ function renderTextY(circlesText, newYScale, chosenYAxis) {
 //------------------------------
 // function used for creating and updating tooltip
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
+
+
     var toolTip = d3.tip()
         .attr("class", "d3-tip")
         .offset([80, -60])
         .html(function (d) {
-            return (`${d.state}<br>In Poverty: ${d.poverty}<br>Lacks Healthcare: ${d.healthcare}`);
+            return (`${d.state}<br>${chosenXAxis}: ${d[chosenXAxis]}<br>${chosenYAxis}: ${d[chosenYAxis]}`);
         });
 
     // Create tooltip in the chart
@@ -301,7 +303,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             circlesText = renderTextX(circlesText, xLinScale, chosenXAxis);
 
             // updates tooltips with new info
-            // circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         }
 
 
@@ -326,10 +328,10 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
 
         if (value !== chosenYAxis) {
 
-            // replaces chosenXAxis with value
+            // replaces chosenYAxis with value
             chosenYAxis = value;
 
-            // console.log(chosenXAxis)
+            // console.log(chosenYAxis)
 
             // functions here found above csv import
             // updates y scale for new data
@@ -338,13 +340,13 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             // updates y axis with transition
             yAxis = renderAxesY(yLinScale, yAxis);
 
-            // updates circles with new x values
+            // updates circles with new y values
             circlesGroup = renderCirclesY(circlesGroup, yLinScale, chosenYAxis);
 
             circlesText = renderTextY(circlesText, yLinScale, chosenYAxis);
 
             // updates tooltips with new info
-            // circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
+            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
         }
 
     });
