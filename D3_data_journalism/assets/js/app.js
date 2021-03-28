@@ -24,14 +24,12 @@ var chartGroup = svg.append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //------------------------------
-// Create array of object containing x-axis labels
+// Create object containing x-axis and y-axis labels
 var xAxisLabels = {
     poverty: "In Poverty (%)",
     age: "Age (Median)",
     income: "Household Income (Median)"
 };
-
-// Create array of object containing y-axis labels
 var yAxisLabels = {
     healthcare: "Lacks Healthcare (%)",
     smokes: "Smokes (%)",
@@ -69,7 +67,7 @@ function yScale(data, chosenY) {
 };
 
 //------------------------------
-// function used for updating xAxis var upon click on axis label
+// function used for updating x-axis and y-axis var upon click on axis label
 function renderAxes(newXScale, xAxis) {
     var bottomAxis = d3.axisBottom(newXScale);
 
@@ -91,8 +89,8 @@ function renderAxes(newYScale, yAxis) {
 }
 
 //------------------------------
-// function used for updating circles group with a transition to
-// new circles
+// function used for updating "location" of circles group 
+// with a transition to new circles location
 function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 
     circlesGroup.transition()
@@ -148,6 +146,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
             toolTip.hide(data);
         });
 };
+
 //------------------------------
 // Import Data
 d3.csv("assets/data/data.csv").then(function (stateData) {
@@ -201,13 +200,23 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         .text(function (d) {
             return d.abbr;
         });
+
     // Create x-axes labels
     for (i = 0; i < Object.keys(xAxisLabels).length; i++) {
         var xKeys = Object.keys(xAxisLabels);
         var xValues = Object.values(xAxisLabels);
+
+        var xStatus = "";
+        if (xKeys[i] === chosenXAxis) {
+            xStatus = "active";
+        } else {
+            xStatus = "inactive";
+        }
+
         chartGroup.append("text")
             .attr("transform", `translate(${width / 2}, ${height + margin.top + 20 + (20 * i)})`)
-            .attr("class", "aText")
+            .classed("aText", true)
+            .classed(xStatus, true)
             .attr("value", xKeys[i])
             .text(xValues[i]);
     };
@@ -216,26 +225,49 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     for (i = 0; i < Object.keys(yAxisLabels).length; i++) {
         var yKeys = Object.keys(yAxisLabels);
         var yValues = Object.values(yAxisLabels);
+
+        var yStatus = "";
+        if (yKeys[i] === chosenYAxis) {
+            yStatus = "active";
+        } else {
+            yStatus = "inactive";
+        }
+
         chartGroup.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 + margin.left - (20 * i) - 135)
             .attr("x", 0 - (height / 2))
-            .attr("class", "aText")
+            .classed("aText", true)
+            .classed(yStatus, true)
             .attr("value", yKeys[i])
             .text(yValues[i]);
     };
+
+
+
     // Initialize tool tip
     var toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
 
 
 
-    // var aText = d3.selectAll(".aText");
+    var aText = d3.selectAll(".aText");
 
-    // aText.on("click", function (data) {
-    //     console.log(this);
-    //     this.append("text").classed("aText active", true);
-    // });
+    aText.on("click", function (data) {
+        console.log(this);
+        if (d3.selectAll(".active") == true) {
+            var activeText = d3.selectAll(".active");
+            console.log(activeText);
+            activeText
+                .classed("active", false)
+                .classed("inactive", true);
+        }
+        data = d3.select(this);
+        data
+            .classed("active", true)
+            .classed("inactive", false);
+
+    });
 
 }).catch(function (error) {
     console.log(error);
