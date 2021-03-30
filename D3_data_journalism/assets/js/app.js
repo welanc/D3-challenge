@@ -209,6 +209,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         .attr("cy", d => yLinScale(d[chosenYAxis]))
         .attr("r", "15");
 
+    // Create Text Abbreviations of States over Circles
     var circlesText = chartGroup.selectAll("text.stateText")
         .data(stateData)
         .enter()
@@ -221,7 +222,7 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             return d.abbr;
         });
 
-    // Create group for x-axis and y-axis labels
+    // Create svg group for x-axis and y-axis labels
     xLabelsGroup = chartGroup.append("g")
         .attr("id", "xLabelsGroup");
     yLabelsGroup = chartGroup.append("g")
@@ -231,14 +232,14 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     for (i = 0; i < Object.keys(xAxisLabels).length; i++) {
         var xKeys = Object.keys(xAxisLabels);
         var xValues = Object.values(xAxisLabels);
-
+        // Add the class "active" to the chosen X axis
         var xStatus = "";
         if (xKeys[i] === chosenXAxis) {
             xStatus = "active";
         } else {
             xStatus = "inactive";
         }
-
+        // Append all x-axes to the html
         xLabelsGroup.append("text")
             .attr("transform", `translate(${width / 2}, ${height + margin.top + 20 + (20 * i)})`)
             .classed("aText", true)
@@ -251,14 +252,14 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     for (i = 0; i < Object.keys(yAxisLabels).length; i++) {
         var yKeys = Object.keys(yAxisLabels);
         var yValues = Object.values(yAxisLabels);
-
+        // Add the class "active" to the chosen Y axis
         var yStatus = "";
         if (yKeys[i] === chosenYAxis) {
             yStatus = "active";
         } else {
             yStatus = "inactive";
         }
-
+        // Append all y-axes to the html    
         yLabelsGroup.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 + margin.left - (20 * i) - 135)
@@ -275,10 +276,13 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
     var xText = d3.select("#xLabelsGroup").selectAll(".aText");
     var yText = d3.select("#yLabelsGroup").selectAll(".aText");
 
+    // Listen for on click event and 
+    // dynamic change of plot, axis and labels on the x axis
     xText.on("click", function (data) {
         var value = d3.select(this).attr("value");
         console.log(`This value: ${value}, compared with current value: ${chosenXAxis}`);
 
+        // Clear previously active axis label and make clicked label as active
         if (d3.selectAll(".active")) {
             var activeText = d3.select("#xLabelsGroup").selectAll(".active");
             console.log(activeText);
@@ -290,7 +294,6 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
         data
             .classed("active", true)
             .classed("inactive", false);
-
 
         if (value !== chosenXAxis) {
 
@@ -314,15 +317,15 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             // updates tooltips with new info
             toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText);
         }
-
-
     });
 
+    // Listen for on click event and 
+    // dynamic change of plot, axis and labels on the x axis
     yText.on("click", function (data) {
         var value = d3.select(this).attr("value");
         console.log(`This value: ${value}, compared with current value: ${chosenYAxis}`);
 
-
+        // Clear previously active axis label and make clicked label as active
         if (d3.selectAll(".active")) {
             var activeText = d3.select("#yLabelsGroup").selectAll(".active");
             console.log(activeText);
@@ -357,7 +360,6 @@ d3.csv("assets/data/data.csv").then(function (stateData) {
             // updates tooltips with new info
             toolTip = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup, circlesText);
         }
-
     });
 
 }).catch(function (error) {
